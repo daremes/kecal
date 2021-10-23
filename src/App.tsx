@@ -1,4 +1,3 @@
-import "./styles.css";
 import AudioFile from "./AudioFile";
 import { DEFAULT_SOURCES } from "./setup";
 
