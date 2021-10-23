@@ -102,7 +102,7 @@ export default function AudioFile({
     loadAudioFile(source);
   }, [source]);
 
-  const stopOthers = (id: number) => {
+  const pauseOthers = (id: number) => {
     loadedSounds
       .filter((snd) => snd.id !== id)
       .forEach(({ audio }) => {
@@ -117,7 +117,7 @@ export default function AudioFile({
         onClick={() => {
           if (sound.audio) {
             if (sound.audio.paused) {
-              stopOthers(source.id);
+              pauseOthers(source.id);
               sound.audio.currentTime = 0;
               sound.audio.play();
               setPlaying(true);
