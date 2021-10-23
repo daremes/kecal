@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, Dispatch, SetStateAction } from "react";
 import { createUseStyles } from "react-jss";
+import { LoadedSound } from "./App";
 import { Source } from "./setup";
 
 interface StyleOptions {
@@ -42,6 +43,8 @@ const useStyles = createUseStyles({
   },
 });
 interface Props {
+  loadedSounds: LoadedSound[];
+  setLoadedSounds: Dispatch<SetStateAction<LoadedSound[]>>;
   source: Source;
 }
 
@@ -61,7 +64,11 @@ const getInfo = ({ playing, name, loading }: GetInfo) => {
   return <div>{name}</div>;
 };
 
-export default function AudioFile({ source }: Props) {
+export default function AudioFile({
+  source,
+  loadedSounds,
+  setLoadedSounds,
+}: Props) {
   const [sound, setSound] = useState(source);
   const [playing, setPlaying] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -77,18 +84,31 @@ export default function AudioFile({ source }: Props) {
         audio.removeEventListener("canplaythrough", onAudioLoaded);
         const updatedSource = { ...src };
         updatedSource.audio = audio;
+        setLoadedSounds((prev) => [...prev, { id: source.id, audio: audio }]);
         setSound(updatedSource);
         setLoading(false);
       };
       const onEnded = () => {
         setPlaying(false);
       };
+      const onPause = () => {
+        setPlaying(false);
+      };
       audio.addEventListener("canplaythrough", onAudioLoaded);
       audio.addEventListener("ended", onEnded);
+      audio.addEventListener("pause", onPause);
       audio.load();
     };
     loadAudioFile(source);
   }, [source]);
+
+  const stopOthers = (id: number) => {
+    loadedSounds
+      .filter((snd) => snd.id !== id)
+      .forEach(({ audio }) => {
+        audio.pause();
+      });
+  };
 
   return (
     <div className={classes.wrapper}>
@@ -97,12 +117,12 @@ export default function AudioFile({ source }: Props) {
         onClick={() => {
           if (sound.audio) {
             if (sound.audio.paused) {
+              stopOthers(source.id);
               sound.audio.currentTime = 0;
               sound.audio.play();
               setPlaying(true);
             } else {
               sound.audio.pause();
-              setPlaying(false);
             }
           }
         }}

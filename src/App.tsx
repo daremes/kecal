@@ -2,6 +2,7 @@ import AudioFile from "./AudioFile";
 import { DEFAULT_SOURCES } from "./setup";
 import injectSheet, { createUseStyles } from "react-jss";
 import Content from "./Content";
+import { useState } from "react";
 
 const style = {
   "@global": {
@@ -31,8 +32,14 @@ const useStyles = createUseStyles({
   },
 });
 
+export interface LoadedSound {
+  id: number;
+  audio: HTMLAudioElement;
+}
+
 function App() {
   const classes = useStyles();
+  const [loadedSounds, setLoadedSounds] = useState<LoadedSound[]>([]);
 
   return (
     <div>
@@ -43,7 +50,11 @@ function App() {
         <div className={classes.container}>
           {DEFAULT_SOURCES.map((source, i) => (
             <div key={source.id}>
-              <AudioFile source={source} />
+              <AudioFile
+                source={source}
+                loadedSounds={loadedSounds}
+                setLoadedSounds={setLoadedSounds}
+              />
             </div>
           ))}
         </div>
