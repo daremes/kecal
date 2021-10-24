@@ -54,8 +54,10 @@ const useStyles = createUseStyles({
   },
 });
 interface Props {
+  autoplayId?: number;
   loadedSounds: LoadedSound[];
   setLoadedSounds: Dispatch<SetStateAction<LoadedSound[]>>;
+  setLink: Dispatch<SetStateAction<string>>;
   source: Source;
 }
 
@@ -76,9 +78,11 @@ const getInfo = ({ playing, name, loading }: GetInfo) => {
 };
 
 export default function AudioFile({
+  autoplayId,
   source,
   loadedSounds,
   setLoadedSounds,
+  setLink,
 }: Props) {
   const [sound, setSound] = useState(source);
   const [playing, setPlaying] = useState(false);
@@ -88,6 +92,13 @@ export default function AudioFile({
   const classes = useStyles({
     image: source.image,
   });
+
+  useEffect(() => {
+    if (autoplayId === source.id) {
+      setPlaying(true);
+      sound.audio?.play();
+    }
+  }, [sound, autoplayId]);
 
   useEffect(() => {
     const loadAudioFile = (src: Source) => {
@@ -123,6 +134,16 @@ export default function AudioFile({
     loadAudioFile(source);
   }, [source]);
 
+  const handleLink = () => {
+    const getPathFromUrl = (url: string) => {
+      return url.split(/[?#]/)[0];
+    };
+    const url = window.location.href;
+    const path = getPathFromUrl(url);
+    const link = `${path}?id=${source.id}`;
+    setLink(link);
+  };
+
   const pauseOthers = (id: number) => {
     loadedSounds
       .filter((snd) => snd.id !== id)
@@ -131,23 +152,23 @@ export default function AudioFile({
       });
   };
 
+  const play = () => {
+    if (sound.audio) {
+      if (sound.audio.paused) {
+        pauseOthers(source.id);
+        sound.audio.currentTime = 0;
+        sound.audio.play();
+        setPlaying(true);
+        handleLink();
+      } else {
+        sound.audio.pause();
+      }
+    }
+  };
+
   return (
     <div className={classes.wrapper}>
-      <button
-        className={classes.button}
-        onClick={() => {
-          if (sound.audio) {
-            if (sound.audio.paused) {
-              pauseOthers(source.id);
-              sound.audio.currentTime = 0;
-              sound.audio.play();
-              setPlaying(true);
-            } else {
-              sound.audio.pause();
-            }
-          }
-        }}
-      >
+      <button className={classes.button} onClick={play}>
         <div className={classes.scrim}>
           <div className={classes.text}>
             {getInfo({ loading, playing, name: source.name })}

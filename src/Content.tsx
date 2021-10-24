@@ -8,11 +8,13 @@ interface Props {
 const useStyles = createUseStyles({
   content: {
     width: "100%",
+    height: "100%",
     maxWidth: 1192,
-    overflow: "hidden",
+    overflowY: "hidden",
   },
   wrapper: {
     width: "100%",
+    height: "100%",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
