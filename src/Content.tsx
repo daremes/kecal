@@ -9,12 +9,14 @@ const useStyles = createUseStyles({
   content: {
     width: "100%",
     maxWidth: 1192,
+    overflow: "hidden",
   },
   wrapper: {
     width: "100%",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
+    flexWrap: "wrap",
   },
 });
 

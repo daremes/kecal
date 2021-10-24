@@ -1,4 +1,4 @@
-import { useState, useEffect, Dispatch, SetStateAction } from "react";
+import { useState, useEffect, Dispatch, SetStateAction, useRef } from "react";
 import { createUseStyles } from "react-jss";
 import { LoadedSound } from "./App";
 import { Source } from "./setup";
@@ -41,6 +41,17 @@ const useStyles = createUseStyles({
     textTransform: "uppercase",
     fontSize: 12,
   },
+  text: {
+    margin: "0 4px",
+  },
+  progress: {
+    position: "absolute",
+    width: "0%",
+    height: 4,
+    left: 0,
+    bottom: 0,
+    background: "#fff",
+  },
 });
 interface Props {
   loadedSounds: LoadedSound[];
@@ -72,6 +83,7 @@ export default function AudioFile({
   const [sound, setSound] = useState(source);
   const [playing, setPlaying] = useState(false);
   const [loading, setLoading] = useState(true);
+  const progressRef = useRef<HTMLDivElement>(null);
 
   const classes = useStyles({
     image: source.image,
@@ -94,9 +106,18 @@ export default function AudioFile({
       const onPause = () => {
         setPlaying(false);
       };
+      const onTimeUpdate = () => {
+        const duration = audio.duration;
+        const currentTime = audio.currentTime;
+        const progress = (currentTime / duration) * 100;
+        if (progressRef.current) {
+          progressRef.current.style.width = `${progress}%`;
+        }
+      };
       audio.addEventListener("canplaythrough", onAudioLoaded);
       audio.addEventListener("ended", onEnded);
       audio.addEventListener("pause", onPause);
+      audio.addEventListener("timeupdate", onTimeUpdate);
       audio.load();
     };
     loadAudioFile(source);
@@ -128,8 +149,11 @@ export default function AudioFile({
         }}
       >
         <div className={classes.scrim}>
-          {getInfo({ loading, playing, name: source.name })}
+          <div className={classes.text}>
+            {getInfo({ loading, playing, name: source.name })}
+          </div>
         </div>
+        {playing && <div className={classes.progress} ref={progressRef} />}
       </button>
     </div>
   );

@@ -22,6 +22,8 @@ const useStyles = createUseStyles({
     background: "#000",
     color: "#fff",
     boxShadow: "0 1px 2px 2px rgba(0,0,0,0.25)",
+    fontSize: 20,
+    fontWeight: "bold",
   },
   headerContent: {
     margin: "0 24px",
@@ -29,6 +31,8 @@ const useStyles = createUseStyles({
   container: {
     margin: "24px 24px 0",
     display: "flex",
+    flexWrap: "wrap",
+    justifyContent: "center",
   },
 });
 
