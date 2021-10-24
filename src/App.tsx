@@ -78,6 +78,10 @@ const useStyles = createUseStyles({
   },
 });
 
+export interface AutoplayCB {
+  play: () => void;
+}
+
 export interface LoadedSound {
   id: number;
   audio: HTMLAudioElement;
@@ -87,14 +91,14 @@ function App() {
   const classes = useStyles();
   const [loadedSounds, setLoadedSounds] = useState<LoadedSound[]>([]);
   const [autoplayId, setAutoplayId] = useState<number>();
-  const [showDialog, setShowDialog] = useState<number>();
   const [link, setLink] = useState("");
+  const [onPlay, setOnPlay] = useState<AutoplayCB>({ play: () => {} });
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.has("id")) {
       const id = Number(params.get("id"));
-      setShowDialog(id);
+      setAutoplayId(id);
     }
   }, []);
 
@@ -103,15 +107,15 @@ function App() {
       <div className={classes.header}>
         <div className={classes.headerContent}>Kecal</div>
       </div>
-      {showDialog !== undefined && (
+      {autoplayId !== undefined && (
         <div className={classes.modalWrapper}>
           <div className={classes.modal}>
             <b style={{ marginBottom: 24 }}>Někdo ti něco poslal</b>
             <button
               className={classes.playButton}
               onClick={() => {
-                setAutoplayId(showDialog);
-                setShowDialog(undefined);
+                onPlay.play();
+                setAutoplayId(undefined);
               }}
             >
               Přehrát
@@ -119,7 +123,7 @@ function App() {
             <button
               className={classes.closeButton}
               onClick={() => {
-                setShowDialog(undefined);
+                setAutoplayId(undefined);
               }}
             >
               Zavřít
@@ -137,6 +141,7 @@ function App() {
                 loadedSounds={loadedSounds}
                 setLoadedSounds={setLoadedSounds}
                 setLink={setLink}
+                setOnPlay={setOnPlay}
               />
             </div>
           ))}

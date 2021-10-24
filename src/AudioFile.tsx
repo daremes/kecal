@@ -1,6 +1,6 @@
 import { useState, useEffect, Dispatch, SetStateAction, useRef } from "react";
 import { createUseStyles } from "react-jss";
-import { LoadedSound } from "./App";
+import { AutoplayCB, LoadedSound } from "./App";
 import { Source } from "./setup";
 
 interface StyleOptions {
@@ -58,6 +58,7 @@ interface Props {
   loadedSounds: LoadedSound[];
   setLoadedSounds: Dispatch<SetStateAction<LoadedSound[]>>;
   setLink: Dispatch<SetStateAction<string>>;
+  setOnPlay: Dispatch<SetStateAction<AutoplayCB>>;
   source: Source;
 }
 
@@ -83,6 +84,7 @@ export default function AudioFile({
   loadedSounds,
   setLoadedSounds,
   setLink,
+  setOnPlay,
 }: Props) {
   const [sound, setSound] = useState(source);
   const [playing, setPlaying] = useState(false);
@@ -93,12 +95,43 @@ export default function AudioFile({
     image: source.image,
   });
 
-  useEffect(() => {
-    if (autoplayId === source.id) {
-      setPlaying(true);
-      sound.audio?.play();
+  const handleLink = () => {
+    const getPathFromUrl = (url: string) => {
+      return url.split(/[?#]/)[0];
+    };
+    const url = window.location.href;
+    const path = getPathFromUrl(url);
+    const link = `${path}?id=${source.id}`;
+    setLink(link);
+  };
+
+  const pauseOthers = (id: number) => {
+    loadedSounds
+      .filter((snd) => snd.id !== id)
+      .forEach(({ audio }) => {
+        audio.pause();
+      });
+  };
+
+  const play = () => {
+    if (sound.audio) {
+      if (sound.audio.paused) {
+        pauseOthers(source.id);
+        sound.audio.currentTime = 0;
+        sound.audio.play();
+        setPlaying(true);
+        handleLink();
+      } else {
+        sound.audio.pause();
+      }
     }
-  }, [sound, autoplayId]);
+  };
+
+  useEffect(() => {
+    if (autoplayId === source.id && sound.audio) {
+      setOnPlay({ play });
+    }
+  }, [autoplayId, sound]);
 
   useEffect(() => {
     const loadAudioFile = (src: Source) => {
@@ -133,38 +166,6 @@ export default function AudioFile({
     };
     loadAudioFile(source);
   }, [source]);
-
-  const handleLink = () => {
-    const getPathFromUrl = (url: string) => {
-      return url.split(/[?#]/)[0];
-    };
-    const url = window.location.href;
-    const path = getPathFromUrl(url);
-    const link = `${path}?id=${source.id}`;
-    setLink(link);
-  };
-
-  const pauseOthers = (id: number) => {
-    loadedSounds
-      .filter((snd) => snd.id !== id)
-      .forEach(({ audio }) => {
-        audio.pause();
-      });
-  };
-
-  const play = () => {
-    if (sound.audio) {
-      if (sound.audio.paused) {
-        pauseOthers(source.id);
-        sound.audio.currentTime = 0;
-        sound.audio.play();
-        setPlaying(true);
-        handleLink();
-      } else {
-        sound.audio.pause();
-      }
-    }
-  };
 
   return (
     <div className={classes.wrapper}>
